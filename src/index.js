@@ -7,6 +7,7 @@ const { PrismaClient } = require("@prisma/client");
 // const cors = require('cors');
 const bcrypt  = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+require('dotenv').config()
 
 const prisma = new PrismaClient();
 
@@ -35,7 +36,7 @@ app.post("/register", async (req, res) => {
       
           // check if user already exist
           // Validate if user exist in our database
-          const oldUser = await User.findUnique({ 
+          const oldUser = await prisma.user.findUnique({ 
               where: {
                     email: email
               }
@@ -58,9 +59,14 @@ app.post("/register", async (req, res) => {
           })
           const token = jwt.sign(
             {user_id: user._id, email},
-            process.env.JWT_SECRET,
-            {}
-          )
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: "2h",
+            }
+          );
+          user.token = token;
+
+          res.status(201).json(user);
     }catch(e){
         console.log(e)
     }
