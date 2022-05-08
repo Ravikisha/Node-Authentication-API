@@ -18,5 +18,5 @@ model User {
   last_name String @db.VarChar(255)
   password String @db.VarChar(255)
   createdAt DateTime @default(now())
-  token String @db.Text()
+  // token String @db.Text()
 }
