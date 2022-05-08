@@ -167,8 +167,27 @@ app.post("/updatetask", authorization, async (req, res) => {
         },
       },
     });
-
     res.json(update);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+//delete task
+app.post("/deletetask", authorization, async (req, res) => {
+  try {
+    const { id } = req.body;
+    const deleteTask = await prisma.user.update({
+      where: { id: req.user },
+      data: {
+        tasks: {
+          delete: {
+            id,
+          },
+        },
+      },
+    });
+    res.json(deleteTask);
   } catch (error) {
     console.log(error.message);
     res.status(500).send("Server Error");
