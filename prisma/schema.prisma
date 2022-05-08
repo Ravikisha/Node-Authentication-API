@@ -12,11 +12,22 @@ datasource db {
 
 // create a user model
 model User {
-  id  Int @id @default(autoincrement())
+  id  String @id @default(cuid())
   email String  @unique
   first_name String @db.VarChar(255)
   last_name String @db.VarChar(255)
   password String @db.VarChar(255)
   createdAt DateTime @default(now())
+  tasks Task[]
   // token String @db.Text()
+}
+
+
+model Task {
+  id Int @id @default(autoincrement())
+  name String @db.Text()
+  description String @db.Text()
+  createdAt DateTime @default(now())
+  userId String
+  user User? @relation(fields: [userId], references: [id])
 }

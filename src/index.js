@@ -1,4 +1,4 @@
-// create a express server
+// imports:
 const express = require("express");
 const app = express();
 const port = process.env.PORT | 3000;
@@ -65,33 +65,12 @@ app.post("/register", validation, async (req, res) => {
     //genrate the token
     const token = jwtgenerator(user.id);
     res.json({ token: token });
-
-    //Encrypt user password
-    // encryptedPassword = await bcrypt.hash(password, 10);
-
-    // const user = await prisma.user.create({
-    //     data: {
-    //         email: email.toLowerCase(),
-    //         first_name,
-    //         last_name,
-    //         password: encryptedPassword
-    //     }
-    // })
-    // const token = jwt.sign(
-    //   {user_id: user._id, email},
-    //   process.env.ACCESS_TOKEN_SECRET,
-    //   {
-    //       expiresIn: "2h",
-    //   }
-    // );
-    // user.token = token;
-
-    // res.status(201).json(user);
   } catch (e) {
     console.log(e);
   }
 });
 
+//login route
 app.post("/login", validation, async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -117,6 +96,7 @@ app.post("/login", validation, async (req, res) => {
   }
 });
 
+//verify status
 app.get("/is-verify", authorization, async (req, res) => {
   try {
     res.json(true);
@@ -126,29 +106,74 @@ app.get("/is-verify", authorization, async (req, res) => {
   }
 });
 
-app.get('/dashboard',authorization, async (req, res) =>
-{
+//protected route
+app.get("/dashboard", authorization, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user }
-    })
+      where: { id: req.user },
+      include: { tasks: true },
+    });
     res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
   }
 });
-// app.post("/add", async (req, res) => {
-//     const { name, email, password } = req.body;
-//     const user = await prisma.user.create({
-//         data: {
-//             name,
-//             email,
-//             password,
-//         },
-//     });
-//     res.json(user);
-// })
+
+//add tasks
+app.post("/addtask", authorization, async (req, res) => {
+  try {
+    const { name, desc } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { id: req.user },
+    });
+    const task = await prisma.task.create({
+      data: {
+        name,
+        description: desc,
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+    res.json(task);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+//update tasks
+app.post("/updatetask", authorization, async (req, res) => {
+  try {
+    const { id, name, desc } = req.body;
+    // const user = await prisma.user.findUnique({
+    //   where: { id: req.user },
+    // });
+    //update task of user
+    const update = await prisma.user.update({
+      where: { id: req.user },
+      data: {
+        tasks: {
+          update: {
+            where: { id: id },
+            data: {
+              name,
+              description: desc,
+            },
+          },
+        },
+      },
+    });
+
+    res.json(update);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Server Error");
+  }
+});
 
 //app listen on port 3000
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
