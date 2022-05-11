@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "completeAt" SET DEFAULT E'',
+ALTER COLUMN "completeAt" SET DATA TYPE TEXT;

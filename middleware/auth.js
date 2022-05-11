@@ -4,6 +4,7 @@ require('dotenv').config();
 module.exports = async (req, res, next) => {
     try {
         const token = req.header("token");
+        console.log("token",token);
         if(!token){
             return res.status(403).json({error: 'You are not Authorized.'});
         }

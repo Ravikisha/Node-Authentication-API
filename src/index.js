@@ -31,7 +31,7 @@ app.get("/users", async (req, res) => {
 app.post("/register", validation, async (req, res) => {
   try {
     const { first_name, last_name, email, password } = req.body;
-
+    console.log(first_name + " " + last_name + " " + email + " " + password);
     if (!(email && password && first_name && last_name)) {
       res.status(400).send("All input is required");
     }
@@ -64,9 +64,9 @@ app.post("/register", validation, async (req, res) => {
 
     //genrate the token
     const token = jwtgenerator(user.id);
-    res.json({ token: token });
+    res.status(200).json({ token: token });
   } catch (e) {
-    console.log(e);
+    console.log(e.message);
   }
 });
 
@@ -90,7 +90,7 @@ app.post("/login", validation, async (req, res) => {
       return res.status(401).send("Password is incorrect");
     }
     const token = jwtgenerator(user.id);
-    res.json({ token: token });
+    res.status(200).json({ token: token });
   } catch (e) {
     console.log(e);
   }
@@ -123,7 +123,11 @@ app.get("/dashboard", authorization, async (req, res) => {
 //add tasks
 app.post("/addtask", authorization, async (req, res) => {
   try {
-    const { name, desc } = req.body;
+    const { name, desc, complete } = req.body;
+    const hour = complete.split(',')[0];
+    const minute = complete.split(',')[1];
+    const time = new Date()
+    time.setHours(parseInt(hour), parseInt(minute),00);
     const user = await prisma.user.findUnique({
       where: { id: req.user },
     });
@@ -131,6 +135,7 @@ app.post("/addtask", authorization, async (req, res) => {
       data: {
         name,
         description: desc,
+        completeAt: time,
         user: {
           connect: {
             id: user.id,
@@ -139,6 +144,7 @@ app.post("/addtask", authorization, async (req, res) => {
       },
     });
     res.json(task);
+    console.log(hour,minute,time);
   } catch (error) {
     console.log(error.message);
     res.status(500).send("Server Error");
@@ -176,7 +182,8 @@ app.post("/updatetask", authorization, async (req, res) => {
 //delete task
 app.post("/deletetask", authorization, async (req, res) => {
   try {
-    const { id } = req.body;
+    const { req_id } = req.body;
+    const id = await parseInt(req_id);
     const deleteTask = await prisma.user.update({
       where: { id: req.user },
       data: {

@@ -29,5 +29,6 @@ model Task {
   description String @db.Text()
   createdAt DateTime @default(now())
   userId String
+  completeAt String @default("")
   user User? @relation(fields: [userId], references: [id])
 }
