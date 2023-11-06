@@ -1,3 +1,4 @@
+![Poster](docs/docs1.jpg)
 # Node Authentication API 🌐
 
 ## Project Name: Task Manager API 🔐
